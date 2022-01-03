@@ -3,6 +3,7 @@
 #include <functional>
 #include <cassert>
 #include <future>
+#include <memory>
 
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/connect.hpp>
@@ -118,15 +119,15 @@ void server::shutdown()
 
 void server::register_player(std::shared_ptr<connection> conn)
 {
-    std::shared_ptr<player_conn> player_conn(new player_conn(std::move(*conn)));
-    player_conn->follow_up();
+    std::shared_ptr<player_conn> player_c(new player_conn(std::move(*conn)));
+    player_c->follow_up();
     AUTOCRAFT_LOG("CONNS SIZE", conns_.size());
     {
         AUTOCRAFT_LOCK(server_mutex_);
         std::erase(conns_, conn);
     }
     AUTOCRAFT_LOG("CONNS SIZE", conns_.size());
-    player_conns_.emplace_back(std::move(player_conn));
+    player_conns_.emplace_back(std::move(player_c));
 }
 
 void server::register_master(std::shared_ptr<connection> conn)
